@@ -12,10 +12,10 @@ header("Location: index.php");
     <body background="">
         <h1>Welcome <?php echo $_SESSION['name']; ?></h1>
         <p>Here are your measurments</p>
-        <table style="border: 1px solid black; width:30%;">
+        <table>
             <tr>
-                <th style="border: 1px solid black;">Value</th>
-                <th style="border: 1px solid black;">Measured on <th>
+                <th>Value</th>
+                <th>Measured on</th>
             </tr>
             <?php
             $sql = "SELECT Value,CreatedTimestamp FROM Readings WHERE isActive IS TRUE AND UserID = '".$_SESSION['ID']."' ORDER BY CreatedTimestamp DESC";
@@ -24,8 +24,8 @@ header("Location: index.php");
             if ($result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) {
                     ?><tr>
-                        <td style="border: 1px solid black;"> <?php echo $row['Value'] ?></td>
-                        <td style="border: 1px solid black;"> <?php echo $row['CreatedTimestamp'] ?></td>
+                        <td> <?php echo $row['Value'] ?></td>
+                        <td> <?php echo $row['CreatedTimestamp'] ?></td>
                     </tr><?php
                 }
             }?>

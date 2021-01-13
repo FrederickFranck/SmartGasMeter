@@ -16,10 +16,10 @@
 ?>
 
 <html>
-<!--
-<link rel="stylesheet" type="text/css" href="rsc/style.css">
-<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-<link rel="icon" href="favicon.ico" type="image/x-icon">-->
+
+<link rel="stylesheet" type="text/css" href="style.css">
+<link rel="shortcut icon" href="rsc/favicon.ico" type="image/x-icon">
+<link rel="icon" href="rsc/favicon.ico" type="image/x-icon">
 
     <div id="navbar">
         <a href="index.php">HOME</a>
@@ -37,6 +37,6 @@
             ?>
 
     </div>
-     <body background="">
+     <body background="rsc/CNIOT.jpg">
      <br><br>
 </html>

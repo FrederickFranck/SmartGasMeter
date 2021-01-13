@@ -87,12 +87,15 @@ function add_reading($userid,$value,$connection){
 
 }
 
-function get_readings($id,$connection){
+function test($payload,$connection){
+    $sql = "INSERT INTO TEST (Payload) VALUES ('".$payload."')";
+    $result = $connection->query($sql);
+    echo "Succesfully inserted data ";
 
 }
 
+function get_readings($id,$connection){
 
-
-
+}
 
 ?>
