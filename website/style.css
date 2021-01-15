@@ -4,3 +4,62 @@ table{
 table,th,td{
     border: 1px solid black;
 }
+
+p{
+    width: 40%;
+}
+
+h1,p,.wrap{
+    color: white;
+}
+
+input{
+    border-radius: 1px;
+}
+
+#navbar{
+    background-color: #166198;
+    overflow: hidden;
+    width: 50%;
+}
+
+#navbar a{
+    float: left;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+}
+
+#navbar a:hover{
+    background-color: #CEFEFF;
+    color: black;
+}
+
+#navbar a:active{
+    background-color: #CEFEFF;
+    color: black;
+}
+
+#navbar a:visited{
+    color: #2193D2;
+}
+
+#loginform{
+    float: left;
+    margin: 10px;
+    margin-right: 50px;
+}
+#registerform{
+    float: left;
+    margin: 10px;
+}
+
+#buttons button{
+    margin: 2px;
+    font-size: 25px;
+    text-decoration: none;
+    background-color: #CEFEFF;
+    color: black
+}

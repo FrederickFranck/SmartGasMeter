@@ -14,29 +14,24 @@
     include 'functions.php';
 
 ?>
-
 <html>
-
 <link rel="stylesheet" type="text/css" href="style.css">
 <link rel="shortcut icon" href="rsc/favicon.ico" type="image/x-icon">
 <link rel="icon" href="rsc/favicon.ico" type="image/x-icon">
-
     <div id="navbar">
-        <a href="index.php">HOME</a>
-
+        <a href="index.php">Home</a>
         <?php
         if($_SESSION['ID'] == "0"){
-            ?><a href="login.php">LOGIN</a><?php
+            ?><a href="login.php">Login</a><?php
         }
         else {
-            ?><a href="logout.php">LOGOUT</a>
-            <a href=overview.php>OVERVIEW</a>
-            <br>
-            <br>
-        <?php }
             ?>
-
+            <a href=overview.php>Overview</a>
+            <a href="settings.php">Settings</a>
+            <a href="logout.php">Logout</a>
+            <br>
+            <br>
+        <?php } ?>
     </div>
      <body background="rsc/CNIOT.jpg">
-     <br><br>
 </html>
