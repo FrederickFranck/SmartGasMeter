@@ -30,15 +30,16 @@
              <form id="update-notification-form" method="post" class="formulieren" target="_self">
 
                  <label for="emailCheckbox" class="logintext">Notify via email</label>
-                 <input type="checkbox" name="email" id="emailCheckbox" value="email-notification">
+                 <input type="checkbox" name="emailCheckboxname" id="emailCheckbox" value="email-notification">
                  <br><br>
                  <label for="everyreadingCheckbox" class="logintext">Notify me after every reading</label>
-                 <input type="checkbox" name="every-reading" id="everyreadingCheckbox" value="everyreading-notification">
+                 <input type="checkbox" name="everyreadingCheckboxname" id="everyreadingCheckbox" value="everyreading-notification">
                  <br><br>
                  <div class="logintext">Warning Limit</div>
                  <br>
-                 <input type="range" name="warning-limit-name" id="warningLimit" value="22" min="1" max="100" oninput="warningLimitOutput.value = warningLimit.value">
-                 <output name="warning-limit-output-name" id="warningLimitOutput">22</output>
+                 <?php $warning = get_warning_value($_SESSION['ID'],$connection); ?>
+                 <input type="range" name="warningLimitName" id="warningLimit" value=<?php echo $warning;?> min="0" max="100" step="5" oninput="warningLimitOutput.value = warningLimit.value">
+                 <output name="warningLimitOutputName" id="warningLimitOutput"><?php echo $warning;?></output>
                  <br><br>
                  <input type="submit" name="update-notification" value="Save">
              </form>
@@ -46,20 +47,28 @@
 
 
 
-         <?php
-         if(isset($_POST['update-email'])){
-             update_email($_SESSION['ID'],$_POST['email'],$connection);
-         }
-         elseif(isset($_POST['update-name'])){
-             update_name($_SESSION['ID'],$_POST['name'],$connection);
-         }
-         elseif(isset($_POST['update-password'])){
-             update_password($_SESSION['ID'],$_POST['password'],$connection);
-         }//TODO fix
-         elseif(isset($_POST['update-notification'])){
-              update_settings($_POST['email'],$_POST['password'],$connection);
-         }
-         ?>
+    <?php
+        if(isset($_POST['update-email'])){
+            update_email($_SESSION['ID'],$_POST['email'],$connection);
+        }
+        elseif(isset($_POST['update-name'])){
+            update_name($_SESSION['ID'],$_POST['name'],$connection);
+        }
+        elseif(isset($_POST['update-password'])){
+            update_password($_SESSION['ID'],$_POST['password'],$connection);
+        }
+        elseif(isset($_POST['update-notification'])){
+            $email = "False";
+            $always = "False";
+            if(isset($_POST['emailCheckboxname'])){
+                $email = "True";
+            }
+            if(isset($_POST['everyreadingCheckboxname'])){
+                $always = "True";
+            }
+            update_settings($_SESSION['ID'],$email,$always,$_POST['warningLimitName'],$connection);
+        }
+    ?>
 
 
 

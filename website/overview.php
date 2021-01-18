@@ -4,6 +4,7 @@
 if($_SESSION['ID'] == "0"){
     header("Location: index.php");
 }
+
 ?>
     <head>
         <title>Overzicht</title>
@@ -18,6 +19,15 @@ if($_SESSION['ID'] == "0"){
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
+
+        <?php
+        $sql ="SELECT * FROM Readings WHERE isActive IS TRUE AND UserID = '".$_SESSION['ID']."'";
+        $result = $connection->query($sql);
+        if (!$result) {
+            trigger_error('Invalid query: ' . $connection->error);
+        }
+        if ($result->num_rows > 0) { ?>
+
         <div id="gauge">
             <p>Latest measurement on <?php echo reformat_long(get_latest_reading($_SESSION['ID'],$connection)[1]) ?></p>
             <div id="gauge-chart" style="width: 400px; height: 120px;"></div>
@@ -27,7 +37,8 @@ if($_SESSION['ID'] == "0"){
             <p>Measurements graph</p>
             <canvas id="GasLevel"></canvas>
         </div>
-
+        <?php }
+        ?>
 
         <script>
         //Hide/unhide
@@ -86,6 +97,18 @@ if($_SESSION['ID'] == "0"){
                 data:[
                     <?php
                     foreach ($values as $key => $value) {
+                        echo "20 ,";
+                    }
+                    ?>
+                ],
+                label:"Alert",
+                borderColor:"#FF0000",
+                backgroundColor:"#FF0000",
+                fill:false
+            },{
+                data:[
+                    <?php
+                    foreach ($values as $key => $value) {
                         echo "'".$value."' ,";
                     }
                     ?>
@@ -105,19 +128,24 @@ if($_SESSION['ID'] == "0"){
 
 
         //Live gauge
+        <?php
+        $value = get_latest_reading($_SESSION['ID'],$connection)[0];
+        $warning = get_warning_value($_SESSION['ID'],$connection);
+        ?>
+
         google.charts.load('current', {'packages':['gauge']});
         google.charts.setOnLoadCallback(drawChart);
 
         function drawChart() {
             var data = google.visualization.arrayToDataTable([
               ['Label', 'Value'],
-              ['GasPeil', <?php echo get_latest_reading($_SESSION['ID'],$connection)[0];?>],
+              ['GasPeil', <?php echo $value?>],
             ]);
 
             var options = {
               width: 900, height: 600,
-              redFrom: 0, redTo: 20,
-              yellowFrom:20, yellowTo: 30,
+              redFrom: 0, redTo: <?php echo $warning;?>,
+              yellowFrom:<?php echo $warning;?>, yellowTo: <?php echo ($warning + 10);?>,
               minorTicks: 5
             };
             var chart = new google.visualization.Gauge(document.getElementById('gauge-chart'));

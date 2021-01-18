@@ -26,7 +26,7 @@
         }
         else {
             ?>
-            <a href=overview.php>Overview</a>
+            <a class="active" href=overview.php>Overview</a>
             <a href="settings.php">Settings</a>
             <a href="logout.php">Logout</a>
             <br>
