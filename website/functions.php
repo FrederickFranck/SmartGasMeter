@@ -62,6 +62,47 @@ function login($email,$password,$connection){
     }
 }
 
+function login_api($email,$password,$connection){
+    $emailRegex = '/.*@.*\..+/';
+
+    if(!empty($email)){
+        if(preg_match($emailRegex,$email)){
+            $sql = "SELECT * FROM Users WHERE IsActive IS TRUE AND Email = '".$email."' ";
+        }
+    }
+    $result = $connection->query($sql);
+
+    if (!$result) {
+        trigger_error('Invalid query: ' . $connection->error);
+    }
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            if(password_verify($password,$row['Password'])){
+                return $row['ID'];
+                //$_SESSION['name'] = $row['Name'];
+            }
+        }
+    }
+}
+
+function is_provider($userid,$connection){
+        $sql = "SELECT ID FROM Users WHERE isActive IS TRUE AND ProviderID = '".$_SESSION['ID']."'";
+        $result = $connection->query($sql);
+        if (!$result) {
+            trigger_error('Invalid query: ' . $connection->error);
+        }
+        $clients = array();
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                array_push($clients,$row['ID']);
+            }
+            return $clients;
+        }
+        else {
+            return false;
+        }
+}
+
 function send_mail($userid,$value,$connection,$warningLevel){
     $sql = "SELECT Name, Email FROM Users WHERE isActive IS TRUE AND ID = '".$userid."'";
     $result = $connection->query($sql);
@@ -145,6 +186,19 @@ function add_reading($userid,$value,$connection){
     }
 
 
+}
+
+function get_name($id,$connection){
+    $sql ="SELECT DISTINCT Name FROM Users WHERE isActive IS TRUE AND ID = '".$id."'";
+    $result = $connection->query($sql);
+    if (!$result) {
+        trigger_error('Invalid query: ' . $connection->error);
+    }
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        return $row['Name'];
+
+    }
 }
 
 function get_latest_reading($id,$connection){

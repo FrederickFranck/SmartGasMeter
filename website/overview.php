@@ -11,10 +11,16 @@ if($_SESSION['ID'] == "0"){
     </head>
 
     <body background="">
-        <h1>Welcome <?php echo $_SESSION['name']; ?></h1>
+        <h1>Welcome <?php echo get_name($_SESSION['ID'],$connection); ?></h1>
         <div id="buttons">
             <button onclick="showGauge()">Gauge</button>
             <button onclick="showHistory()">History</button>
+            <?php
+            $clients = is_provider($_SESSION['ID'],$connection);
+            if($clients != false){
+                ?><button onclick="showClients()">Show Clients</button><?php
+            }
+            ?>
         </div>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -37,19 +43,55 @@ if($_SESSION['ID'] == "0"){
             <p>Measurements graph</p>
             <canvas id="GasLevel"></canvas>
         </div>
-        <?php }
-        ?>
+
+        <div id="clients" style="display:none">
+            <p>Here are your clients latest measurements</p>
+            <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Measured on</th>
+            </tr>
+            <?php
+            if($clients != false){
+                foreach ($clients as $id) {
+                    ?><tr>
+                        <td> <?php echo get_name($id,$connection) ?></td>
+                        <td> <?php echo get_latest_reading($id,$connection)[0]; ?></td>
+                        <td> <?php echo reformat_long(get_latest_reading($id,$connection)[1]); ?></td>
+                    </tr><?php
+                }
+            }?>
+        </table>
+
+
+
+        </div>
+
+        <?php }?>
+
+
+
+
 
         <script>
         //Hide/unhide
         function showGauge(){
             document.getElementById('gauge').style.display = '';
             document.getElementById('history').style.display = 'none';
+            document.getElementById('clients').style.display = 'none';
         }
 
         function showHistory(){
             document.getElementById('gauge').style.display = 'none';
             document.getElementById('history').style.display = '';
+            document.getElementById('clients').style.display = 'none';
+        }
+
+        function showClients(){
+            document.getElementById('gauge').style.display = 'none';
+            document.getElementById('history').style.display = 'none';
+            document.getElementById('clients').style.display = '';
         }
 
         //History Chart
