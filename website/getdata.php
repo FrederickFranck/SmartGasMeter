@@ -2,6 +2,7 @@
 
 include 'dbconnect.php';
 include 'functions.php';
+$_POST = json_decode(file_get_contents('php://input'), true);
 
     if(isset($_GET['id'])){
         $id = $_GET['id'];
@@ -11,7 +12,7 @@ include 'functions.php';
     }
     elseif(isset($_POST['email'])){
         $id = $_POST['email'];
-        $password = $POST['password'];
+        $password = $_POST['password'];
         echo login_api($id,$password,$connection);
 
     }

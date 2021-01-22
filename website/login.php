@@ -18,6 +18,7 @@
                 <div class="logintext">e-mail:</div><input type="email" name="email"><br><br>
                 <div class="logintext">name:</div><input type="name" name="name"><br><br>
                 <div class="logintext">password:</div><input type="password" name="password"><br><br>
+                <div class="logintext">device id:</div><input type="name" name="deviceid"><br><br>
                 <input type="submit" name="btnRegister" value="register">
             </form>
 

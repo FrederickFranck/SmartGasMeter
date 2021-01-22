@@ -27,7 +27,7 @@ if($_SESSION['ID'] == "0"){
 
 
         <?php
-        $sql ="SELECT * FROM Readings WHERE isActive IS TRUE AND UserID = '".$_SESSION['ID']."'";
+        $sql ="SELECT * FROM Readings WHERE isActive IS TRUE AND DeviceID = (SELECT DeviceID FROM Users WHERE isActive IS TRUE AND ID = '".$_SESSION['ID']."' )";
         $result = $connection->query($sql);
         if (!$result) {
             trigger_error('Invalid query: ' . $connection->error);
@@ -96,7 +96,7 @@ if($_SESSION['ID'] == "0"){
 
         //History Chart
         <?php
-        $sql ="SELECT Value,CreatedTimestamp FROM Readings WHERE isActive IS TRUE AND UserID = '".$_SESSION['ID']."' ORDER BY CreatedTimestamp";
+        $sql ="SELECT Value,CreatedTimestamp FROM Readings WHERE isActive IS TRUE AND DeviceID = (SELECT DeviceID FROM Users WHERE isActive IS TRUE AND ID = '".$_SESSION['ID']."' ) ORDER BY CreatedTimestamp";
         $result = $connection->query($sql);
         if (!$result) {
             trigger_error('Invalid query: ' . $connection->error);

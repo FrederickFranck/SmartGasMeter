@@ -1,6 +1,6 @@
 <?php
 
-function register($email,$name,$password,$connection){
+function register($email,$name,$password,$deviceid,$connection){
         if(!empty($email)){
             $sql = "SELECT * FROM Users WHERE IsActive IS TRUE AND Email = '".$email."' ";
             $result = $connection->query($sql);
@@ -8,22 +8,35 @@ function register($email,$name,$password,$connection){
             if (!$result) {
                 trigger_error('Invalid query: ' . $connection->error);
             }
+            //Als de user nog niet geregistreert is
             if ($result->num_rows == 0) {
-                $result = $connection->query("SELECT UUID()");
-                $row = $result->fetch_assoc();
-                $id = $row["UUID()"];
-                $pw = password_hash($password,PASSWORD_BCRYPT);
 
-                $sql = "INSERT INTO Users (ID, Name , Email , Password) VALUES ('".$id."','".$name."','".$email."','".$pw."')";
-                $reg = $connection->query($sql);
+                $sql = "SELECT * FROM DeviceIDs WHERE IsActive IS TRUE AND ID = '".$deviceid."' ";
+                $result = $connection->query($sql);
+
+                if (!$result) {
+                    trigger_error('Invalid query: ' . $connection->error);
+                }
+                //Als het deviceid nog niet in gebruik is
+                if ($result->num_rows > 0) {
+                    $result = $connection->query("SELECT UUID()");
+                    $row = $result->fetch_assoc();
+                    $newid = $row["UUID()"];
+                    $pw = password_hash($password,PASSWORD_BCRYPT);
+                    $sql = "INSERT INTO Users (ID, Name , Email , Password , DeviceID) VALUES ('".$newid."','".$name."','".$email."','".$pw."','".$deviceid."')";
+                    $reg = $connection->query($sql);
 
 
-                $result = $connection->query("SELECT UUID()");
-                $row = $result->fetch_assoc();
-                $settingsid = $row["UUID()"];
-                $sql = "INSERT INTO Settings (ID, UserID) VALUES ('".$settingsid."','".$id."')";
-                $reg = $connection->query($sql);
-                ?><div class="loginmsg">REGISTERED</div><?php
+                    $result = $connection->query("SELECT UUID()");
+                    $row = $result->fetch_assoc();
+                    $settingsid = $row["UUID()"];
+                    $sql = "INSERT INTO Settings (ID, UserID) VALUES ('".$settingsid."','".$newid."')";
+                    $reg = $connection->query($sql);
+                    ?><div class="loginmsg">REGISTERED</div><?php
+                }
+                else{
+                    ?><div class="loginmsg">DEVICE IS ALREADY IN USE</div><?php
+                }
             }
             else{
                 ?><div class="loginmsg">USER ALREADY REGISTERED</div><?php
@@ -83,10 +96,14 @@ function login_api($email,$password,$connection){
             }
         }
     }
+    else{
+        return "401";
+    }
 }
 
+
 function is_provider($userid,$connection){
-        $sql = "SELECT ID FROM Users WHERE isActive IS TRUE AND ProviderID = '".$_SESSION['ID']."'";
+        $sql = "SELECT ID FROM Users WHERE isActive IS TRUE AND ProviderID = '".$userid."'";
         $result = $connection->query($sql);
         if (!$result) {
             trigger_error('Invalid query: ' . $connection->error);
@@ -115,8 +132,26 @@ function send_mail($userid,$value,$connection,$warningLevel){
         $name = $row['Name'];
     }
 
-    $subject = "SmartGasMeter Notification";
-    $message = "Your gaslevel is '".$value."' ";
+    if($warningLevel == 0){
+        $subject = "SmartGasMeter Notification";
+        $message = "Your current gaslevel is '".$value."' ";
+    }
+
+    elseif($warningLevel == 1){
+        $subject = "SmartGasMeter Notification: CAUTION ";
+        $message = "Your current gaslevel is '".$value."' this is almost at your warning level ";
+    }
+
+    elseif($warningLevel == 2){
+        $subject = "SmartGasMeter Notification: WARNING !!";
+        $message = "Your current gaslevel is '".$value."' this equal/below your warning level  ";
+    }
+
+    elseif($warningLevel == 3){
+        $subject = "SmartGasMeter Notification: CALAMITOUS !!!!!!!";
+        $message = "Your gaslevel is '".$value."' this might be a hardware error or your tank is empty ";
+    }
+
 
     $success = mail($email, $subject, $message);
 
@@ -141,15 +176,19 @@ function mail_check($userid,$value,$connection){
 
         if($emailNotification){
             if($everyNotification){
+                //normal
                 send_mail($userid,$value,$connection,0);
             }
             elseif($value <= ($warningValue)){
+                //warning
                 send_mail($userid,$value,$connection,2);
             }
             elseif($value <= ($warningValue + $warning_offset)){
+                //caution
                 send_mail($userid,$value,$connection,1);
             }
             elseif ($value == 0) {
+                //calamitous
                 send_mail($userid,$value,$connection,3);
             }
         }
@@ -157,25 +196,29 @@ function mail_check($userid,$value,$connection){
 
 }
 
-function add_reading($userid,$value,$connection){
+function add_reading($deviceid,$value,$connection){
 
-    //kijkt na of er een user bestaat met het meegegeven id
-    $sql = "SELECT ID FROM Users WHERE isActive IS TRUE AND ID = '".$userid."'";
+    //kijkt na of er een user bestaat met het meegegeven deviceid
+    $sql = "SELECT ID FROM Users WHERE isActive IS TRUE AND DeviceID = '".$deviceid."'";
     $result = $connection->query($sql);
 
     if (!$result) {
         trigger_error('Invalid query: ' . $connection->error);
     }
     if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        //haalt het id op van de gebruiker
+        $userid = $row['ID'];
+
         //Haal een uniek id op uit de database
         $result = $connection->query("SELECT UUID()");
         $row = $result->fetch_assoc();
-        $id = $row["UUID()"];
+        $newid = $row["UUID()"];
 
         //als de gebruiker bestaat wordt
         //de lezing toegevoegt aan de database
         mail_check($userid,$value,$connection);
-        $sql = "INSERT INTO Readings (ID, UserID , Value) VALUES ('".$id."','".$userid."','".$value."')";
+        $sql = "INSERT INTO Readings (ID, DeviceID , Value) VALUES ('".$newid."','".$deviceid."','".$value."')";
         $result = $connection->query($sql);
         echo "Succesfully inserted data ";
 
@@ -188,8 +231,8 @@ function add_reading($userid,$value,$connection){
 
 }
 
-function get_name($id,$connection){
-    $sql ="SELECT DISTINCT Name FROM Users WHERE isActive IS TRUE AND ID = '".$id."'";
+function get_name($userid,$connection){
+    $sql ="SELECT DISTINCT Name FROM Users WHERE isActive IS TRUE AND ID = '".$userid."'";
     $result = $connection->query($sql);
     if (!$result) {
         trigger_error('Invalid query: ' . $connection->error);
@@ -201,8 +244,20 @@ function get_name($id,$connection){
     }
 }
 
-function get_latest_reading($id,$connection){
-    $sql ="SELECT Value,CreatedTimestamp FROM Readings WHERE isActive IS TRUE AND UserID = '".$id."' ORDER BY CreatedTimestamp DESC LIMIT 1";
+function get_latest_reading($userid,$connection){
+    //haal het device id van de user op
+    $sql = "SELECT DeviceID FROM Users WHERE isActive IS TRUE AND ID = '".$userid."'";
+    $result = $connection->query($sql);
+    if (!$result) {
+        trigger_error('Invalid query: ' . $connection->error);
+    }
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $deviceid = $row['DeviceID'];
+    }
+
+    //haal de laastse meting van het device op
+    $sql ="SELECT Value,CreatedTimestamp FROM Readings WHERE isActive IS TRUE AND DeviceID = '".$deviceid."' ORDER BY CreatedTimestamp DESC LIMIT 1";
     $result = $connection->query($sql);
     if (!$result) {
         trigger_error('Invalid query: ' . $connection->error);
@@ -218,8 +273,8 @@ function get_latest_reading($id,$connection){
 
 }
 
-function get_warning_value($id,$connection){
-    $sql = "SELECT WarningValue FROM Settings WHERE isActive IS TRUE AND UserID = '".$id."'";
+function get_warning_value($userid,$connection){
+    $sql = "SELECT WarningValue FROM Settings WHERE isActive IS TRUE AND UserID = '".$userid."'";
     $result = $connection->query($sql);
     if (!$result) {
         trigger_error('Invalid query: ' . $connection->error);
@@ -258,31 +313,31 @@ function reformat_long($timestamp){
 
 }
 
-function update_email($id,$email,$connection){
-    $sql = "UPDATE Users SET Email = '".$email."',UpdatedTimestamp=now() WHERE isActive IS TRUE AND ID = '".$id."'";
+function update_email($userid,$email,$connection){
+    $sql = "UPDATE Users SET Email = '".$email."',UpdatedTimestamp=now() WHERE isActive IS TRUE AND ID = '".$userid."'";
     $result = $connection->query($sql);
     echo "e-mail Succesfully Updated";
 
 }
 
-function update_name($id,$name,$connection){
-    $sql = "UPDATE Users SET Name = '".$name."',UpdatedTimestamp=now() WHERE isActive IS TRUE AND ID = '".$id."'";
+function update_name($userid,$name,$connection){
+    $sql = "UPDATE Users SET Name = '".$name."',UpdatedTimestamp=now() WHERE isActive IS TRUE AND ID = '".$userid."'";
     $result = $connection->query($sql);
     echo "name Succesfully Updated";
 
 }
 
-function update_password($id,$password,$connection){
+function update_password($userid,$password,$connection){
     $pw = password_hash($password,PASSWORD_BCRYPT);
-    $sql = "UPDATE Users SET Password = '".$pw."',UpdatedTimestamp=now() WHERE isActive IS TRUE AND ID = '".$id."'";
+    $sql = "UPDATE Users SET Password = '".$pw."',UpdatedTimestamp=now() WHERE isActive IS TRUE AND ID = '".$userid."'";
     $result = $connection->query($sql);
     echo "password Succesfully Updated";
 
 }
 
-function update_settings($id,$emailCB,$alwaysCB,$warning,$connection){
+function update_settings($userid,$emailCB,$alwaysCB,$warning,$connection){
 
-    $sql = "UPDATE Settings SET EmailNotification = $emailCB, EveryNotification = $alwaysCB, WarningValue=$warning WHERE isActive IS TRUE AND UserID = '".$id."'";
+    $sql = "UPDATE Settings SET EmailNotification = $emailCB, EveryNotification = $alwaysCB, WarningValue=$warning WHERE isActive IS TRUE AND UserID = '".$userid."'";
     $result = $connection->query($sql);
     echo "Settings Succesfully Updated";
 }

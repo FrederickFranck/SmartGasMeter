@@ -16,8 +16,8 @@
 ?>
 <html>
 <link rel="stylesheet" type="text/css" href="style.css">
-<link rel="shortcut icon" href="rsc/favicon.ico" type="image/x-icon">
-<link rel="icon" href="rsc/favicon.ico" type="image/x-icon">
+<link rel="shortcut icon" href="rsc/favicon2.png" type="image/x-icon">
+<link rel="icon" href="rsc/favicon2.png" type="image/x-icon">
     <div id="navbar">
         <a href="index.php">Home</a>
         <?php
