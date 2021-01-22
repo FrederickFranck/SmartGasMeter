@@ -96,6 +96,7 @@ if($_SESSION['ID'] == "0"){
 
         //History Chart
         <?php
+        $warning = get_warning_value($_SESSION['ID'],$connection);
         $sql ="SELECT Value,CreatedTimestamp FROM Readings WHERE isActive IS TRUE AND DeviceID = (SELECT DeviceID FROM Users WHERE isActive IS TRUE AND ID = '".$_SESSION['ID']."' ) ORDER BY CreatedTimestamp";
         $result = $connection->query($sql);
         if (!$result) {
@@ -139,14 +140,16 @@ if($_SESSION['ID'] == "0"){
                 data:[
                     <?php
                     foreach ($values as $key => $value) {
-                        echo "20 ,";
+                        echo $warning.",";
                     }
                     ?>
                 ],
                 label:"Alert",
                 borderColor:"#FF0000",
                 backgroundColor:"#FF0000",
-                fill:false
+                fill:false,
+                lineTension: 0
+
             },{
                 data:[
                     <?php
@@ -158,7 +161,8 @@ if($_SESSION['ID'] == "0"){
                 label:"Value",
                 borderColor:"#00FF00",
                 backgroundColor:"#00FF00",
-                fill:false
+                fill:false,
+                lineTension: 0
             }]
         };
 
@@ -172,7 +176,6 @@ if($_SESSION['ID'] == "0"){
         //Live gauge
         <?php
         $value = get_latest_reading($_SESSION['ID'],$connection)[0];
-        $warning = get_warning_value($_SESSION['ID'],$connection);
         ?>
 
         google.charts.load('current', {'packages':['gauge']});
